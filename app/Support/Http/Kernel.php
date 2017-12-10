@@ -1,11 +1,34 @@
 <?php
 
-namespace App\Http;
+namespace App\Support\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
+    public function bootstrap()
+    {
+        parent::bootstrap();
+
+        if (config('app.debug')) {
+            array_unshift($this->middleware, '\Clockwork\Support\Laravel\ClockworkMiddleware::class');
+        }
+
+        /* TODO Do we need this?
+        if ($this->app['config']->get('app.throttle_api.enabled', true)) {
+            $middleware_name = ThrottleRequests::class;
+            $throttle_count = $this->app['config']->get('app.throttle_api.max_requests', 60);
+            $throttle_minutes = $this->app['config']->get('app.throttle_api.decay_minutes', 1);
+
+            $middleware = "$middleware_name:$throttle_count,$throttle_minutes";
+
+            $groups = $this->app['config']->get('app.throttle_api.groups', ['api', 'oldapi', 'location', 'activate']);
+            foreach ($groups as $group) {
+                $this->router->prependMiddlewareToGroup($group, $middleware);
+            }
+        }*/
+    }
+
     /**
      * The application's global HTTP middleware stack.
      *
@@ -16,9 +39,9 @@ class Kernel extends HttpKernel
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-        \App\Http\Middleware\TrimStrings::class,
+        Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        \App\Http\Middleware\TrustProxies::class,
+        Middleware\TrustProxies::class,
     ];
 
     /**
@@ -28,12 +51,12 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \App\Http\Middleware\EncryptCookies::class,
+            Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
+            Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
@@ -55,7 +78,7 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'guest' => Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     ];
 }
